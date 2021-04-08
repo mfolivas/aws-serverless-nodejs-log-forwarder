@@ -1,13 +1,66 @@
 service: aws-serverless-nodejs-log-forwarder
 
+plugins:
+  - serverless-pseudo-parameters
+  - serverless-iam-roles-per-function
+
 frameworkVersion: '2'
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs14.x
   lambdaHashingVersion: 20201221
+
+  stage: ${opt:stage, 'dev'}
+
+  versionFunctions: false
 
 
 functions:
-  hello:
-    handler: handler.hello
+  send-logs-to-s3:
+    handler: extract/s3/functions/s3.extract
+    description: Sends CloudWatch logs from Kinesis to S3
+    memorySize: 128
+    events:
+      - stream:
+          type: kinesis
+          arn:
+            Fn::GetAtt:
+              - LogsKinesisStream
+              - Arn
+
+
+resources:
+  Resources:
+    LogsKinesisStream:
+      Type: AWS::Kinesis::Stream
+      Properties:
+        Name: ${self:service}-${self:provider.stage}-logs
+        ShardCount: ${env:KINESIS_SHARD_COUNT, '1'}
+
+    CloudWatchLogsRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - logs.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        Policies:
+          - PolicyName: root
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - kinesis:PutRecords
+                    - kinesis:PutRecord
+                  Resource:
+                    Fn::GetAtt:
+                      - LogsKinesisStream
+                      - Arn
+        RoleName: ${self:service}-${self:provider.stage}-cloudwatchrole
