@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/mfolivas/aws-serverless-nodejs-log-forwarder/issues"
   },
-  "homepage": "https://github.com/mfolivas/aws-serverless-nodejs-log-forwarder#readme"
+  "homepage": "https://github.com/mfolivas/aws-serverless-nodejs-log-forwarder#readme",
+  "dependencies": {
+    "aws-sdk": "^2.882.0",
+    "zlib": "^1.0.5"
+  }
 }
