@@ -1,0 +1,19 @@
+{
+  "name": "aws-serverless-nodejs-log-forwarder",
+  "version": "1.0.0",
+  "description": "Demo of how to ship logs from CloudWatch Logs to a Kinesis stream, and then ship them to S3 and Elasticsearch.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mfolivas/aws-serverless-nodejs-log-forwarder.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mfolivas/aws-serverless-nodejs-log-forwarder/issues"
+  },
+  "homepage": "https://github.com/mfolivas/aws-serverless-nodejs-log-forwarder#readme"
+}

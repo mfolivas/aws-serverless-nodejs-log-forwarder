@@ -16,6 +16,7 @@ provider:
   versionFunctions: false
 
 custom:
+  BUCKET_NAME: ${self:service}-${self:provider.stage}-data
   BATCH_SIZE: 1000
   LOG_GROUP_RETENTION_IN_DAYS: 1
   KINESIS_RETENTION_IN_HOURS: 24
@@ -23,9 +24,9 @@ custom:
   PREFIX: '/aws/lambda'
 
 functions:
-  ship-logs-to-s3:
-    handler: extract/s3/functions/shipper.handler
-    description: Sends CloudWatch logs from Kinesis to S3
+  ship-logs-to-firehose:
+    handler: shippers/firehose/shipper.handler
+    description: Sends CloudWatch logs from Kinesis to Firehose
     memorySize: 128
     events:
       - stream:
@@ -40,6 +41,11 @@ functions:
 
 resources:
   Resources:
+    FirehoseS3DataBucket:
+      Type: AWS::S3::Bucket
+      Properties: 
+        BucketName: ${self:custom.BUCKET_NAME}
+
     LogsKinesisStream:
       Type: AWS::Kinesis::Stream
       Properties:
@@ -94,7 +100,7 @@ resources:
                   - Effect: Allow
                     Action: s3:*
                     Resource:
-                      Fn::Sub: arn:aws:s3:::${self:service}-${self:provider.stage}-data
+                      Fn::Sub: arn:aws:s3:::${self:custom.BUCKET_NAME}
                       
     LogExtractorFirehose:
       Type: AWS::KinesisFirehose::DeliveryStream
@@ -102,7 +108,7 @@ resources:
         DeliveryStreamName: ${self:service}-${self:provider.stage}-LogExtractorFirehose
         S3DestinationConfiguration:
           BucketARN:
-            Fn::Sub: arn:aws:s3:::${self:service}-${self:provider.stage}-data
+            Fn::Sub: arn:aws:s3:::${self:custom.BUCKET_NAME}
           BufferingHints:
             IntervalInSeconds: 300
             SizeInMBs: 5
